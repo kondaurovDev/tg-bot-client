@@ -7,7 +7,7 @@
  * caches them as `input/api.html` and `input/webapp.html`, and returns
  * parsed {@link DocPage} / {@link WebAppPage} instances.
  */
-import { Effect } from "effect"
+import { Effect, Schedule } from "effect"
 import { writeFile, readFile, mkdir } from "fs/promises"
 
 import { DocPage, WebAppPage } from "~/scrape/page"
@@ -38,7 +38,13 @@ const getPageHtml = (page: HtmlPageName) =>
     await writeFile(fileName, content)
 
     return content
-  })
+  }).pipe(
+    Effect.retry(
+      Schedule.exponential("2 seconds").pipe(
+        Schedule.compose(Schedule.recurs(3))
+      )
+    )
+  )
 
 // ── PageProviderService ──
 
