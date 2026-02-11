@@ -4,4 +4,4 @@
 "@effect-ak/tg-bot-client": patch
 ---
 
-Update Telegram Bot API to version 9.3
+Update Telegram Bot API to version 9.4
