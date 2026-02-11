@@ -1,5 +1,11 @@
 # @effect-ak/tg-bot-api
 
+## 1.2.0
+
+### Minor Changes
+
+- 3c2bc12: Update to Bot API 9.4, fix version parser, use workspace protocol for internal deps
+
 ## 1.1.0
 
 ### Minor Changes
