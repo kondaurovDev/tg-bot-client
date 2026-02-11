@@ -8,7 +8,7 @@
  * parsed {@link DocPage} / {@link WebAppPage} instances.
  */
 import { Effect } from "effect"
-import { writeFile, readFile } from "fs/promises"
+import { writeFile, readFile, mkdir } from "fs/promises"
 
 import { DocPage, WebAppPage } from "~/scrape/page"
 
@@ -34,6 +34,7 @@ const getPageHtml = (page: HtmlPageName) =>
 
     const content = await fetch(HtmlPages[page]).then((_) => _.text())
 
+    await mkdir("input", { recursive: true })
     await writeFile(fileName, content)
 
     return content
