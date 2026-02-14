@@ -4,29 +4,17 @@ description: Type-safe TypeScript SDK for building Telegram bots
 template: splash
 hero:
   title: Telegram Bot SDK
-  tagline: Type-safe TypeScript SDK for building Telegram bots, auto-generated from official documentation.
+  tagline: Types, HTTP client, and bot runner — everything you need to build Telegram bots in TypeScript.
   actions:
-    - text: Getting Started
-      link: /getting-started/installation/
-      icon: right-arrow
-    - text: API Reference
+    - text: Bot API Docs
       link: /api/
-      variant: minimal
+      icon: right-arrow
 ---
 
-import { Card, CardGrid } from '@astrojs/starlight/components';
+import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
 
 <CardGrid>
-  <Card title="API Types" icon="document">
-    Complete TypeScript types auto-generated from official Telegram Bot API docs.
-  </Card>
-  <Card title="HTTP Client" icon="rocket">
-    Lightweight, type-safe HTTP client for all Bot API methods.
-  </Card>
-  <Card title="Bot Runner" icon="setting">
-    Effect-based bot runner with long polling and hot reload.
-  </Card>
-  <Card title="Playground" icon="laptop">
-    Try it in your browser — [Telegram Bot Playground](https://effect-ak.github.io/tg-bot-playground/).
-  </Card>
+  <LinkCard title="API Types" description="Complete TypeScript types auto-generated from official Telegram Bot API docs." href="/api-types/why/" />
+  <LinkCard title="HTTP Client" description="Lightweight, type-safe HTTP client for all Bot API methods." href="/http-client/overview/" />
+  <LinkCard title="Bot Runner" description="Effect-based bot runner with long polling and hot reload." href="/bot-runner/overview/" />
 </CardGrid>

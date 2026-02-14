@@ -1,8 +1,11 @@
 import { defineConfig } from "astro/config";
 import starlight from "@astrojs/starlight";
+import sitemap from "@astrojs/sitemap";
 
 export default defineConfig({
+  site: "https://tg-bot-sdk.website",
   integrations: [
+    sitemap(),
     starlight({
       title: "Telegram Bot SDK",
       social: {
