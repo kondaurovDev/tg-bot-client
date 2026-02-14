@@ -15,7 +15,7 @@ import { TsMorpthWriter } from "./service/code-writers"
 
 const configProvider = ConfigProvider.fromJson({
   "scrapper-out-dir": ["."],
-  "markdown-out-dir": ["..", "..", "docs"]
+  "markdown-out-dir": ["..", "..", "docs", "src", "content", "docs", "api"]
 })
 
 export const BotApiCodegenRuntime = ManagedRuntime.make(

@@ -1,0 +1,20 @@
+{
+  "name": "tg-bot-docs",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": ["esbuild", "sharp"]
+  },
+  "devDependencies": {
+    "@astrojs/starlight": "^0.32.0",
+    "astro": "^5.0.0",
+    "effortless-aws": "^0.6.0",
+    "sharp": "^0.33.0",
+    "typescript": "^5.9.0"
+  }
+}

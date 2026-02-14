@@ -6,7 +6,7 @@ if (!token) {
   throw new Error("TOKEN environment variable is required")
 }
 
-const GITHUB_URL = "https://github.com/effect-ak/tg-bot-client"
+const GITHUB_URL = "https://github.com/kondaurovDev/tg-bot-sdk"
 const NPM_URL = "https://www.npmjs.com/package/@effect-ak/tg-bot"
 
 const startMessage = `

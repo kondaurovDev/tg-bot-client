@@ -496,7 +496,7 @@ No installation required - perfect for quick prototyping and learning!
 
 ## Related Packages
 
-This package is part of the `tg-bot-client` monorepo:
+This package is part of the `tg-bot-sdk` monorepo:
 
 - **[@effect-ak/tg-bot-client](../client)** - Type-safe HTTP client for Telegram Bot API
 - **[@effect-ak/tg-bot-api](../api)** - TypeScript types for Telegram Bot API and Mini Apps

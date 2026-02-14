@@ -1,6 +1,8 @@
 packages:
   - packages/**/*
   - example
+  - docs
 
 onlyBuiltDependencies:
   - esbuild
+  - sharp

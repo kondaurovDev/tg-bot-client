@@ -1,11 +1,11 @@
 /**
  * @module markdown
  *
- * Markdown documentation generator.
+ * Markdown documentation generator for Starlight.
  *
- * Converts extracted methods and types into plain markdown files.
+ * Converts extracted methods and types into markdown files with YAML frontmatter.
  * Each Bot API method becomes a file in `methods/`; each type
- * becomes a file in `types/`. A root `README.md` serves as an index.
+ * becomes a file in `types/`. An `index.md` serves as the API reference overview.
  */
 import { Config, Effect, String as Str } from "effect"
 import { writeFile, mkdir } from "fs/promises"
@@ -24,19 +24,22 @@ const toKebab = (name: string) =>
 const escapeMarkdownTable = (text: string) =>
   text.replaceAll("|", "\\|")
 
-const linkSingleType = (name: string, typesPrefix: string): string => {
+const escapeYaml = (text: string) =>
+  text.replaceAll('"', '\\"').replaceAll("\n", " ")
+
+const linkSingleType = (name: string): string => {
   const arrayMatch = name.match(/^(.+?)(\[\]+)$/)
   const baseName = arrayMatch ? arrayMatch[1] : name
   const suffix = arrayMatch ? arrayMatch[2] : ""
 
   if (!isComplexType(baseName)) return `\`${name}\``
-  return `[\`${baseName}\`](${typesPrefix}${toKebab(baseName)}.md)${suffix}`
+  return `[\`${baseName}\`](/api/types/${toKebab(baseName)}/)${suffix}`
 }
 
-const renderLinkedType = (type: NormalType, typesPrefix: string): string => {
+const renderLinkedType = (type: NormalType): string => {
   if (type.isOverridden || type.isEnum) return `\`${type.getTsType()}\``
   return type.typeNames
-    .map((name) => linkSingleType(name, typesPrefix))
+    .map((name) => linkSingleType(name))
     .join(" \\| ")
 }
 
@@ -45,7 +48,9 @@ const renderLinkedType = (type: NormalType, typesPrefix: string): string => {
 const makeMethodPage = (method: ExtractedMethodShape): string => {
   const description = method.methodDescription.map(removeHtmlTags).join(" ")
   const lines: string[] = [
-    `# ${method.methodName}`,
+    "---",
+    `title: "${escapeYaml(method.methodName)}"`,
+    "---",
     "",
     description,
     "",
@@ -59,7 +64,7 @@ const makeMethodPage = (method: ExtractedMethodShape): string => {
     lines.push("|-----------|------|----------|-------------|")
 
     for (const field of method.parameters.fields) {
-      const type = renderLinkedType(field.type, "../types/")
+      const type = renderLinkedType(field.type)
       const required = field.required ? "Yes" : "No"
       const desc = escapeMarkdownTable(field.description.join(" "))
       lines.push(`| ${field.name} | ${type} | ${required} | ${desc} |`)
@@ -69,7 +74,7 @@ const makeMethodPage = (method: ExtractedMethodShape): string => {
   }
 
   lines.push("## Return type", "")
-  lines.push(renderLinkedType(method.returnType, "../types/"), "")
+  lines.push(renderLinkedType(method.returnType), "")
 
   return lines.join("\n")
 }
@@ -79,7 +84,9 @@ const makeMethodPage = (method: ExtractedMethodShape): string => {
 const makeTypePage = (extracted: ExtractedTypeShape): string => {
   const description = extracted.description.join(" ")
   const lines: string[] = [
-    `# ${extracted.typeName}`,
+    "---",
+    `title: "${escapeYaml(extracted.typeName)}"`,
+    "---",
     "",
     description,
     "",
@@ -93,7 +100,7 @@ const makeTypePage = (extracted: ExtractedTypeShape): string => {
     lines.push("|-------|------|----------|-------------|")
 
     for (const field of extracted.type.fields) {
-      const type = renderLinkedType(field.type, "")
+      const type = renderLinkedType(field.type)
       const required = field.required ? "Yes" : "No"
       const desc = escapeMarkdownTable(field.description.join(" "))
       lines.push(`| ${field.name} | ${type} | ${required} | ${desc} |`)
@@ -105,7 +112,7 @@ const makeTypePage = (extracted: ExtractedTypeShape): string => {
     if (typeNames.length > 1) {
       lines.push("## Variants", "")
       for (const name of typeNames) {
-        lines.push(`- ${linkSingleType(name, "")}`)
+        lines.push(`- ${linkSingleType(name)}`)
       }
       lines.push("")
     }
@@ -114,9 +121,9 @@ const makeTypePage = (extracted: ExtractedTypeShape): string => {
   return lines.join("\n")
 }
 
-// ── README index ──
+// ── Index page ──
 
-const makeReadme = (input: {
+const makeIndex = (input: {
   apiVersion: string
   methods: ExtractedMethodShape[]
   types: ExtractedTypeShape[]
@@ -130,9 +137,12 @@ const makeReadme = (input: {
   }
 
   const lines: string[] = [
-    `# Telegram Bot API ${input.apiVersion}`,
+    "---",
+    `title: "API Reference"`,
+    `description: "Telegram Bot API ${input.apiVersion} — auto-generated method and type reference"`,
+    "---",
     "",
-    "Auto-generated from the [official documentation](https://core.telegram.org/bots/api).",
+    `Auto-generated from the [official documentation](https://core.telegram.org/bots/api). Bot API version: **${input.apiVersion}**.`,
     "",
     "## Methods",
     ""
@@ -141,14 +151,14 @@ const makeReadme = (input: {
   for (const [group, methods] of groups) {
     lines.push(`### ${group}`, "")
     for (const m of methods) {
-      lines.push(`- [${m.methodName}](methods/${toKebab(m.methodName)}.md)`)
+      lines.push(`- [${m.methodName}](/api/methods/${toKebab(m.methodName)}/)`)
     }
     lines.push("")
   }
 
   lines.push("## Types", "")
   for (const t of input.types) {
-    lines.push(`- [${t.typeName}](types/${toKebab(t.typeName)}.md)`)
+    lines.push(`- [${t.typeName}](/api/types/${toKebab(t.typeName)}/)`)
   }
   lines.push("")
 
@@ -208,7 +218,7 @@ export class MarkdownWriterService extends Effect.Service<MarkdownWriterService>
           )
 
           yield* Effect.tryPromise(() =>
-            writeFile(Path.join(baseDir, "README.md"), makeReadme(input))
+            writeFile(Path.join(baseDir, "index.md"), makeIndex(input))
           )
         })
 

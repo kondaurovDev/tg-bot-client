@@ -14,11 +14,8 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/kondaurovDev/tg-bot-client",
+    "url": "https://github.com/kondaurovDev/tg-bot-sdk",
     "directory": "packages/client"
-  },
-  "bugs": {
-    "url": "https://github.com/effect-ak/tg-bot-client/issues"
   },
   "publishConfig": {
     "access": "public"
