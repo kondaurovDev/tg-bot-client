@@ -18,11 +18,30 @@ export default defineConfig({
           ],
         },
         {
-          label: "Guides",
+          label: "API Types",
           items: [
-            { label: "API Types", slug: "guides/api-types" },
-            { label: "HTTP Client", slug: "guides/http-client" },
-            { label: "Bot Runner", slug: "guides/bot-runner" },
+            { label: "Why this package?", slug: "api-types/why" },
+            { label: "Bot API Types", slug: "api-types/bot-api" },
+            { label: "Mini App Types", slug: "api-types/webapp" },
+            { label: "How it works", slug: "api-types/how-it-works" },
+          ],
+        },
+        {
+          label: "HTTP Client",
+          items: [
+            { label: "Overview", slug: "http-client/overview" },
+            { label: "Usage Examples", slug: "http-client/usage" },
+            { label: "Error Handling", slug: "http-client/errors" },
+          ],
+        },
+        {
+          label: "Bot Runner",
+          items: [
+            { label: "Overview", slug: "bot-runner/overview" },
+            { label: "Single Mode", slug: "bot-runner/single-mode" },
+            { label: "Batch Mode", slug: "bot-runner/batch-mode" },
+            { label: "Configuration", slug: "bot-runner/configuration" },
+            { label: "Examples", slug: "bot-runner/examples" },
           ],
         },
         {

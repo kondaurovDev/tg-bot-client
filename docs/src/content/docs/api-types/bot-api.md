@@ -1,0 +1,105 @@
+---
+title: Bot API Types
+description: TypeScript types for Telegram Bot API
+---
+
+The `@effect-ak/tg-bot-api` package provides complete TypeScript types auto-generated from the [official Telegram Bot API documentation](https://core.telegram.org/bots/api).
+
+## Installation
+
+```bash
+npm install @effect-ak/tg-bot-api
+```
+
+## What's inside
+
+### Telegram Domain Types
+
+Every object from the [Bot API docs](https://core.telegram.org/bots/api#available-types) has a corresponding TypeScript interface — **287 types** total: `Message`, `User`, `Chat`, `Update`, `CallbackQuery`, `InlineKeyboardMarkup`, `PhotoSize`, `Document`, and more.
+
+```typescript
+import type { Message, User, Chat, Update, InlineKeyboardMarkup } from "@effect-ak/tg-bot-api"
+```
+
+### Api Interface
+
+The `Api` interface maps every Bot API method name to a function signature with typed input and return type. This gives you a single place to look up any method — **165 methods** total.
+
+```typescript
+import type { Api } from "@effect-ak/tg-bot-api"
+
+// Api looks like this:
+interface Api {
+  send_message(_: SendMessageInput): Message
+  get_me(_: GetMeInput): User
+  send_photo(_: SendPhotoInput): Message
+  // ... 165 methods
+}
+```
+
+Each method has a corresponding `*Input` interface with all its parameters:
+
+```typescript
+import type { SendMessageInput } from "@effect-ak/tg-bot-api"
+
+// SendMessageInput has all parameters from the official docs
+const input: SendMessageInput = {
+  chat_id: 123456,
+  text: "Hello!",
+  parse_mode: "HTML",        // optional
+  reply_markup: { ... },     // optional
+}
+```
+
+## Building Your Own Client
+
+Use `Api` with TypeScript generics to build a fully type-safe client. Extract method names, input types, and return types:
+
+```typescript
+import type { Api } from "@effect-ak/tg-bot-api"
+
+type MethodName = keyof Api
+type InputOf<M extends MethodName> = Parameters<Api[M]>[0]
+type OutputOf<M extends MethodName> = ReturnType<Api[M]>
+
+async function execute<M extends MethodName>(
+  method: M,
+  input: InputOf<M>
+): Promise<OutputOf<M>> {
+  const response = await fetch(
+    `https://api.telegram.org/bot${TOKEN}/${method}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(input),
+    }
+  )
+  const json = await response.json()
+  return json.result as OutputOf<M>
+}
+
+// Fully type-safe: input and output are inferred
+const message = await execute("send_message", {
+  chat_id: 123,
+  text: "Hello!",
+})
+// message is Message
+```
+
+You can also build maps of all inputs and return types at once:
+
+```typescript
+// Map of method name → input type
+type ApiInputMap = {
+  [M in keyof Api]: Parameters<Api[M]>[0]
+}
+// ApiInputMap["send_message"] is SendMessageInput
+
+// Map of method name → return type
+type ApiReturnMap = {
+  [M in keyof Api]: ReturnType<Api[M]>
+}
+// ApiReturnMap["send_message"] is Message
+```
+
+For details on how Bot API types are extracted from the HTML documentation, see [How it works → Bot API Extraction](/api-types/how-it-works/#bot-api-extraction).
