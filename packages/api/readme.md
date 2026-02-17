@@ -20,7 +20,7 @@ npm install @effect-ak/tg-bot-api
 
 ## Documentation
 
-Full documentation, codegen internals, and API reference: **[tg-bot-sdk docs](https://github.com/kondaurovDev/tg-bot-sdk)**
+Full documentation, codegen internals, and API reference: **[tg-bot-sdk.website](https://tg-bot-sdk.website)**
 
 ## License
 

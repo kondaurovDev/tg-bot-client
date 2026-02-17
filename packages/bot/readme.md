@@ -69,7 +69,7 @@ runBot({
 
 ## Documentation
 
-Full documentation, examples, and configuration: **[tg-bot-sdk docs](https://github.com/kondaurovDev/tg-bot-sdk)**
+Full documentation, examples, and configuration: **[tg-bot-sdk.website](https://tg-bot-sdk.website)**
 
 ## License
 

@@ -4,6 +4,13 @@
   "description": "Type-safe HTTP client for Telegram Bot API",
   "version": "1.4.0",
   "license": "MIT",
+  "keywords": [
+    "telegram",
+    "telegram-bot",
+    "telegram-bot-api",
+    "http-client",
+    "typescript"
+  ],
   "scripts": {
     "build": "tsup",
     "typecheck": "tsc"
@@ -12,6 +19,7 @@
     "name": "Aleksandr Kondaurov",
     "email": "kondaurov.dev@gmail.com"
   },
+  "homepage": "https://tg-bot-sdk.website",
   "repository": {
     "type": "git",
     "url": "https://github.com/kondaurovDev/tg-bot-sdk",

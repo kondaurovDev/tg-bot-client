@@ -36,7 +36,7 @@ await client.execute("send_message", {
 
 ## Documentation
 
-Full documentation, usage examples, and error handling: **[tg-bot-sdk docs](https://github.com/kondaurovDev/tg-bot-sdk)**
+Full documentation, usage examples, and error handling: **[tg-bot-sdk.website](https://tg-bot-sdk.website)**
 
 ## License
 

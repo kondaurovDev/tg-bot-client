@@ -1,6 +1,11 @@
 # Telegram Bot TypeScript SDK
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Docs](https://img.shields.io/badge/Docs-tg--bot--sdk.website-blue)](https://tg-bot-sdk.website)
+![Telegram Bot API](https://img.shields.io/badge/BotApi-9.4-blue)
+![Telegram WebApp](https://img.shields.io/badge/Telegram.WebApp-9.1-blue)
+[![tg-bot-api](https://img.shields.io/npm/v/%40effect-ak%2Ftg-bot-api?label=tg-bot-api&color=green)](https://www.npmjs.com/package/@effect-ak/tg-bot-api)
+[![tg-bot-client](https://img.shields.io/npm/v/%40effect-ak%2Ftg-bot-client?label=tg-bot-client&color=green)](https://www.npmjs.com/package/@effect-ak/tg-bot-client)
+[![tg-bot](https://img.shields.io/npm/v/%40effect-ak%2Ftg-bot?label=tg-bot&color=green)](https://www.npmjs.com/package/@effect-ak/tg-bot)
 
 Type-safe TypeScript SDK for building Telegram bots, automatically generated from official Telegram Bot API documentation.
 
@@ -10,26 +15,13 @@ This monorepo contains three packages:
 
 ### [@effect-ak/tg-bot-api](./packages/api)
 
-[![NPM Version](https://img.shields.io/npm/v/%40effect-ak%2Ftg-bot-api)](https://www.npmjs.com/package/@effect-ak/tg-bot-api)
-![Telegram Bot API](https://img.shields.io/badge/BotApi-9.4-blue)
-![Telegram WebApp](https://img.shields.io/badge/Telegram.WebApp-9.1-blue)
-[![OpenAPI](https://img.shields.io/badge/OpenAPI-3.1-blue.svg)](https://effect-ak.github.io/telegram-bot-api/)
-![NPM Downloads](https://img.shields.io/npm/dw/%40effect-ak%2Ftg-bot-api)
-
 TypeScript types for Telegram Bot API and Mini Apps, auto-generated from official documentation.
 
 ### [@effect-ak/tg-bot-client](./packages/client)
 
-[![NPM Version](https://img.shields.io/npm/v/%40effect-ak%2Ftg-bot-client)](https://www.npmjs.com/package/@effect-ak/tg-bot-client)
-![NPM Unpacked Size](https://img.shields.io/npm/unpacked-size/%40effect-ak%2Ftg-bot-client)
-![NPM Downloads](https://img.shields.io/npm/dw/%40effect-ak%2Ftg-bot-client)
-
 Lightweight HTTP client for Telegram Bot API with full type safety.
 
 ### [@effect-ak/tg-bot](./packages/bot)
-
-[![NPM Version](https://img.shields.io/npm/v/%40effect-ak%2Ftg-bot)](https://www.npmjs.com/package/@effect-ak/tg-bot)
-![NPM Downloads](https://img.shields.io/npm/dw/%40effect-ak%2Ftg-bot)
 
 Bot framework with fluent builder API, long polling, webhooks, and hot reload.
 
@@ -80,15 +72,15 @@ await client.execute("sendMessage", {
 
 ## 📚 Documentation
 
-Each package has its own detailed documentation:
+Full documentation and API reference: **[tg-bot-sdk.website](https://tg-bot-sdk.website)**
 
-- [API Types Documentation](./packages/api) - TypeScript types for Bot API and Mini Apps
-- [Client Documentation](./packages/client) - HTTP client usage and examples
-- [Bot Runner Documentation](./packages/bot) - Building bots with handlers and polling
+- [Introduction](https://tg-bot-sdk.website/getting-started/introduction/)
+- [Quick Start](https://tg-bot-sdk.website/getting-started/quick-start/)
+- [API Reference](https://tg-bot-sdk.website/api/)
 
 ## 🎮 Playground
 
-Try it in your browser: **[Telegram Bot Playground](https://effect-ak.github.io/tg-bot-playground/)**
+Try it in your browser: **[Telegram Bot Playground](https://tg-bot-sdk.website/playground/)**
 
 ## 🛠️ Development
 

@@ -3,7 +3,7 @@ import starlight from "@astrojs/starlight";
 import sitemap from "@astrojs/sitemap";
 import alpine from "@astrojs/alpinejs";
 import tailwindcss from "@tailwindcss/vite";
-import { rename } from "node:fs/promises";
+import { rename, unlink } from "node:fs/promises";
 
 export default defineConfig({
   site: "https://tg-bot-sdk.website",
@@ -13,12 +13,11 @@ export default defineConfig({
   integrations: [
     sitemap(),
     {
-      name: "rename-sitemap",
+      name: "flatten-sitemap",
       hooks: {
         "astro:build:done": async ({ dir }) => {
-          const from = new URL("sitemap-index.xml", dir);
-          const to = new URL("sitemap.xml", dir);
-          await rename(from, to);
+          await unlink(new URL("sitemap-index.xml", dir));
+          await rename(new URL("sitemap-0.xml", dir), new URL("sitemap.xml", dir));
         },
       },
     },
@@ -41,6 +40,27 @@ export default defineConfig({
           attrs: {
             property: "og:image",
             content: "https://tg-bot-sdk.website/og-banner.png",
+          },
+        },
+        {
+          tag: "meta",
+          attrs: {
+            property: "og:type",
+            content: "website",
+          },
+        },
+        {
+          tag: "meta",
+          attrs: {
+            property: "og:site_name",
+            content: "Telegram Bot SDK",
+          },
+        },
+        {
+          tag: "meta",
+          attrs: {
+            name: "twitter:card",
+            content: "summary_large_image",
           },
         },
       ],

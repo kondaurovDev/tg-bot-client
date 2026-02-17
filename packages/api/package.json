@@ -6,8 +6,11 @@
   "license": "MIT",
   "keywords": [
     "telegram",
+    "telegram-bot",
+    "telegram-bot-api",
     "mini-app",
-    "typescript"
+    "typescript",
+    "types"
   ],
   "author": {
     "name": "Aleksandr Kondaurov",
@@ -21,6 +24,7 @@
     "gen:webapp:api": "MODULE_NAME=webapp tsx ./codegen/main.ts",
     "test": "vitest run"
   },
+  "homepage": "https://tg-bot-sdk.website",
   "repository": {
     "type": "git",
     "url": "https://github.com/kondaurovDev/tg-bot-sdk",
