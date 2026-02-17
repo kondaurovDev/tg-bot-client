@@ -1,10 +1,10 @@
-import { runTgChatBot } from "@effect-ak/tg-bot"
+import { runBot } from "@effect-ak/tg-bot"
 
 import { loadConfig } from "../config"
 
 const config = await loadConfig()
 
-const bot = await runTgChatBot({
+const bot = await runBot({
   bot_token: config.token,
   mode: "single",
   on_message: [

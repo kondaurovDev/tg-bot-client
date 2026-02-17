@@ -15,11 +15,20 @@ async function main() {
     allowed_updates: [ 'callback_query', 'poll', 'message']
   })
 
-  console.log("Webhook set:", result)
+  if (!result.ok) {
+    console.error("Failed to set webhook:", result.error)
+    process.exit(1)
+  }
+  console.log("Webhook set:", result.data)
 
   // Verify
   const info = await client.execute("get_webhook_info", {})
-  console.log("Webhook info:", info)
+
+  if (!info.ok) {
+    console.error("Failed to get webhook info:", info.error)
+    process.exit(1)
+  }
+  console.log("Webhook info:", info.data)
 }
 
 main().catch(console.error)

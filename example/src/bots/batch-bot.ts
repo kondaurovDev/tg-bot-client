@@ -1,5 +1,5 @@
 import { makeTgBotClient } from "@effect-ak/tg-bot-client"
-import { runTgChatBot } from "@effect-ak/tg-bot"
+import { runBot } from "@effect-ak/tg-bot"
 import { loadConfig } from "../config"
 
 const config = await loadConfig()
@@ -8,7 +8,7 @@ const tgClient = makeTgBotClient({
   bot_token: config.token
 })
 
-runTgChatBot({
+runBot({
   bot_token: config.token,
   mode: "batch",
   poll: {
@@ -22,10 +22,14 @@ runTgChatBot({
 
     const messages = updates.map((_) => _.message).filter((_) => _ != null)
 
-    await tgClient.execute("send_message", {
+    const result = await tgClient.execute("send_message", {
       chat_id: config.chatId,
       text: `I got ${messages.length} messages`
     })
+
+    if (!result.ok) {
+      console.error("Failed to send batch summary:", result.error)
+    }
 
     return true
   }

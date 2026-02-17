@@ -1,0 +1,19 @@
+---
+import Default from "@astrojs/starlight/components/SocialIcons.astro";
+---
+
+<a href="/getting-started/introduction/" class="nav-link">Docs</a>
+<a href="/playground/" class="nav-link">Playground</a>
+<Default><slot /></Default>
+
+<style>
+  .nav-link {
+    color: var(--sl-color-text);
+    font-size: var(--sl-text-sm);
+    text-decoration: none;
+    padding-inline-end: 0.5rem;
+  }
+  .nav-link:hover {
+    color: var(--sl-color-text-accent);
+  }
+</style>

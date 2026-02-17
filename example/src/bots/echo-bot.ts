@@ -1,10 +1,9 @@
-import { runTgChatBot } from "@effect-ak/tg-bot"
-import { MESSAGE_EFFECTS } from "@effect-ak/tg-bot-client"
+import { runBot } from "@effect-ak/tg-bot"
 
 import { loadConfig } from "../config"
 const config = await loadConfig()
 
-runTgChatBot({
+runBot({
   bot_token: config.token,
   mode: "single",
   poll: {
@@ -25,7 +24,7 @@ runTgChatBot({
       match: ({ ctx }) => ctx.command === "/bye",
       handle: ({ ctx }) =>
         ctx.reply("See you later!", {
-          message_effect_id: MESSAGE_EFFECTS["❤️"]
+          message_effect_id: "❤️"
         })
     },
     {

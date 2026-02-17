@@ -1,9 +1,22 @@
-export * from "./internal/bot-response"
-export * from "./internal/bot-context"
-export * from "./internal/handle-update"
-export * from "./internal/launch"
-export * from "./internal/poll-settings"
-export * from "./internal/types"
-export * from "./service/run"
-export * from "./run"
-export * from "./webhook"
+export { BotResponse, createBotContext } from "./types"
+
+export type { PollSettings } from "./polling"
+export type {
+  RunBotInput,
+  HandleResult,
+  BotLogger,
+  BotUpdatesHandlers,
+  BotContext,
+  GuardedHandler,
+  HandlerInput,
+  UpdateHandler,
+  HandleUpdateFunction
+} from "./types"
+
+export { extractUpdate } from "./bot-processor"
+
+export { runBot, defineBot, createWebhook } from "./run"
+export type { BotInstance, WebhookBotConfig, WebhookHandler } from "./run"
+
+export { createBot } from "./bot-builder"
+export type { Bot } from "./bot-builder"

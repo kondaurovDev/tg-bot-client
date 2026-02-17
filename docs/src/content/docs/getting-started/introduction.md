@@ -1,0 +1,31 @@
+---
+title: Introduction
+description: What Telegram Bot SDK is and how its packages work together
+---
+
+Telegram Bot SDK is a TypeScript toolkit for working with the Telegram Bot API. It consists of three packages that can be used independently or together.
+
+## What you can do
+
+**Call any Bot API method** — send messages, upload files, manage chats. You get full autocomplete for method names and parameters, and typed results with a simple `ok` / `error` shape. → [How to Use Client](/client/usage/)
+
+**Build a bot** — define handlers for commands, text messages, and callbacks with a fluent builder API. Run it with long polling (no server needed) or webhooks. → [How to Write Bots](/bot-runner/writing-bots/)
+
+**Use just the types** — 287 types and 165 methods, auto-generated from official Telegram docs. No runtime code, works with any HTTP client. → [API Reference](/api/)
+
+## Packages
+
+| Package | npm | What it does |
+|---------|-----|-------------|
+| `@effect-ak/tg-bot-client` | [![npm](https://img.shields.io/npm/v/@effect-ak/tg-bot-client)](https://www.npmjs.com/package/@effect-ak/tg-bot-client) | Type-safe client for calling Bot API methods |
+| `@effect-ak/tg-bot` | [![npm](https://img.shields.io/npm/v/@effect-ak/tg-bot)](https://www.npmjs.com/package/@effect-ak/tg-bot) | Bot framework with handlers, polling, and webhooks |
+| `@effect-ak/tg-bot-api` | [![npm](https://img.shields.io/npm/v/@effect-ak/tg-bot-api)](https://www.npmjs.com/package/@effect-ak/tg-bot-api) | TypeScript types for the entire Bot API |
+
+The bot framework (`@effect-ak/tg-bot`) includes the client, so you only need one install if you're building a bot. Use the client package on its own for simpler use cases like sending notifications or integrating Telegram into an existing app.
+
+## Key Features
+
+- **Always Up-to-Date**: Types generated from official Telegram API documentation
+- **Fully Type-Safe**: Complete TypeScript support for all API methods and types
+- **Zero Config**: Works out of the box with sensible defaults
+- **No Webhooks Required**: Uses long polling — run anywhere without public URLs

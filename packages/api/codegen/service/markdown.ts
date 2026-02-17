@@ -1,11 +1,11 @@
 /**
  * @module markdown
  *
- * Markdown documentation generator.
+ * Markdown documentation generator for Starlight.
  *
- * Converts extracted methods and types into plain markdown files.
+ * Converts extracted methods and types into markdown files with YAML frontmatter.
  * Each Bot API method becomes a file in `methods/`; each type
- * becomes a file in `types/`. A root `README.md` serves as an index.
+ * becomes a file in `types/`. An `index.md` serves as the API reference overview.
  */
 import { Config, Effect, String as Str } from "effect"
 import { writeFile, mkdir } from "fs/promises"
@@ -14,98 +14,402 @@ import * as Path from "path"
 import type { ExtractedMethodShape } from "~/scrape/entity"
 import { removeHtmlTags } from "~/scrape/entity"
 import type { ExtractedTypeShape } from "~/scrape/entity"
-import { EntityFields, isComplexType, type NormalType } from "~/scrape/type-system"
+import {
+  EntityFields,
+  isComplexType,
+  type EntityField,
+  type NormalType
+} from "~/scrape/type-system"
 
 // ── Helpers ──
 
 const toKebab = (name: string) =>
   Str.snakeToKebab(Str.camelToSnake(name)).replace(/^-/, "")
 
-const escapeMarkdownTable = (text: string) =>
-  text.replaceAll("|", "\\|")
+const escapeYaml = (text: string) =>
+  text.replaceAll('"', '\\"').replaceAll("\n", " ")
 
-const linkSingleType = (name: string, typesPrefix: string): string => {
+const joinSentences = (parts: string[]) => {
+  const text = parts.map(removeHtmlTags).join(". ")
+  return text.endsWith(".") ? text : text + "."
+}
+
+const linkSingleType = (name: string): string => {
   const arrayMatch = name.match(/^(.+?)(\[\]+)$/)
   const baseName = arrayMatch ? arrayMatch[1] : name
   const suffix = arrayMatch ? arrayMatch[2] : ""
 
   if (!isComplexType(baseName)) return `\`${name}\``
-  return `[\`${baseName}\`](${typesPrefix}${toKebab(baseName)}.md)${suffix}`
+  return `[\`${baseName}\`](/api/types/${toKebab(baseName)}/)${suffix}`
 }
 
-const renderLinkedType = (type: NormalType, typesPrefix: string): string => {
+const renderLinkedType = (type: NormalType): string => {
   if (type.isOverridden || type.isEnum) return `\`${type.getTsType()}\``
   return type.typeNames
-    .map((name) => linkSingleType(name, typesPrefix))
+    .map((name) => linkSingleType(name))
     .join(" \\| ")
+}
+
+// ── Usage example ──
+
+const toSnakeCase = (name: string) => Str.camelToSnake(name)
+
+const placeholderForField = (name: string, type: NormalType): string => {
+  const tsType = type.getTsType()
+  if (name === "chat_id") return `"YOUR_CHAT_ID"`
+  if (name === "text" || name === "caption") return `"Hello!"`
+  if (name === "parse_mode") return `"HTML"`
+  if (type.isEnum) return type.typeNames[0]
+  if (tsType === "string") return `"..."`
+  if (tsType === "number") return `0`
+  if (tsType === "boolean") return `true`
+  if (tsType.endsWith("[]")) return `[]`
+  return `{ /* ${tsType} */ }`
+}
+
+const usagePreamble = [
+  `import { makeTgBotClient } from "@effect-ak/tg-bot-client"`,
+  "",
+  `const client = makeTgBotClient({ bot_token: "YOUR_BOT_TOKEN" })`,
+  ""
+]
+
+const makeUsageExample = (method: ExtractedMethodShape): string[] => {
+  const snakeName = toSnakeCase(method.methodName)
+  const requiredFields = method.parameters?.fields.filter((f) => f.required) ?? []
+
+  if (requiredFields.length === 0) {
+    return [
+      "## Usage",
+      "",
+      "```typescript",
+      ...usagePreamble,
+      `const result = await client.execute("${snakeName}")`,
+      "```",
+      ""
+    ]
+  }
+
+  const params = requiredFields.map(
+    (f) => `  ${f.name}: ${placeholderForField(f.name, f.type)}`
+  )
+
+  return [
+    "## Usage",
+    "",
+    "```typescript",
+    ...usagePreamble,
+    `const result = await client.execute("${snakeName}", {`,
+    ...params.map((p, i) => (i < params.length - 1 ? p + "," : p)),
+    "})",
+    "```",
+    ""
+  ]
+}
+
+// ── API Runner block ──
+
+const resolveInputType = (field: EntityField): string => {
+  const tsType = field.type.getTsType()
+  if (tsType === "boolean") return "boolean"
+  if (tsType === "number") return "number"
+  if (tsType === "string" || field.type.isEnum || field.type.isOverridden) return "string"
+  if (
+    field.type.typeNames.length <= 2 &&
+    field.type.typeNames.every((n) => n === "string" || n === "number")
+  )
+    return "string"
+  return "json"
+}
+
+const inputStyle =
+  "width:100%;padding:6px 8px;border:1px solid var(--sl-color-gray-5);border-radius:4px;font-size:13px;font-family:var(--sl-font-mono);background:var(--sl-color-bg);color:var(--sl-color-text);"
+
+const labelStyle =
+  "display:block;font-size:12px;font-weight:500;margin-bottom:2px;color:var(--sl-color-gray-2);"
+
+const btnPrimary =
+  "padding:6px 16px;background:var(--sl-color-text-accent);color:white;border:none;border-radius:4px;font-size:13px;cursor:pointer;"
+
+const btnSecondary =
+  "padding:6px 16px;background:transparent;color:var(--sl-color-gray-2);border:1px solid var(--sl-color-gray-5);border-radius:4px;font-size:13px;cursor:pointer;"
+
+const makeFieldInput = (field: EntityField): string[] => {
+  const inputType = resolveInputType(field)
+  const label = `<label style="${labelStyle}">${field.name}</label>`
+
+  if (inputType === "boolean") {
+    return [
+      `<div style="margin-bottom:8px;">`,
+      label,
+      `<select x-model="values.${field.name}" style="${inputStyle}">`,
+      `<option value="">—</option>`,
+      `<option value="true">true</option>`,
+      `<option value="false">false</option>`,
+      `</select>`,
+      `</div>`
+    ]
+  }
+
+  if (inputType === "json") {
+    return [
+      `<div style="margin-bottom:8px;">`,
+      label,
+      `<textarea x-model="values.${field.name}" placeholder='{}' rows="2" style="${inputStyle}resize:vertical;"></textarea>`,
+      `</div>`
+    ]
+  }
+
+  if (field.name === "chat_id") {
+    return [
+      `<div style="margin-bottom:8px;">`,
+      label,
+      `<div style="display:flex;gap:8px;">`,
+      `<input type="text" x-model="values.chat_id" placeholder="chat_id" style="flex:1;${inputStyle}">`,
+      `<button @click="detectChatId()" :disabled="detectingChatId || !token" style="${btnSecondary}font-size:12px;">`,
+      `<span x-show="!detectingChatId">Detect</span>`,
+      `<span x-show="detectingChatId">...</span>`,
+      `</button>`,
+      `</div>`,
+      `</div>`
+    ]
+  }
+
+  const htmlType = inputType === "number" ? "number" : "text"
+  return [
+    `<div style="margin-bottom:8px;">`,
+    label,
+    `<input type="${htmlType}" x-model="values.${field.name}" placeholder="${field.name}" style="${inputStyle}">`,
+    `</div>`
+  ]
+}
+
+const makeApiRunnerBlock = (method: ExtractedMethodShape): string[] => {
+  const fields = method.parameters?.fields ?? []
+
+  const fieldsJson = JSON.stringify(
+    fields.map((f) => ({
+      name: f.name,
+      type: resolveInputType(f),
+      required: f.required
+    }))
+  ).replaceAll('"', "'")
+
+  const config = `{method:'${method.methodName}',fields:${fieldsJson}}`
+
+  const required = fields.filter((f) => f.required)
+  const optional = fields.filter((f) => !f.required)
+
+  const lines: string[] = [
+    `<div class="not-content" x-data="apiRunner(${config})">`,
+    `<div style="margin-top:1.5rem;border:1px solid var(--sl-color-gray-5);border-radius:8px;overflow:hidden;">`,
+
+    // Header
+    `<div style="padding:10px 14px;background:var(--sl-color-gray-6);border-bottom:1px solid var(--sl-color-gray-5);display:flex;align-items:center;justify-content:space-between;">`,
+    `<span style="font-weight:600;font-size:14px;">Try it</span>`,
+    `<span x-show="token" x-cloak style="font-size:12px;color:var(--sl-color-gray-3);">`,
+    `Token saved`,
+    `<button @click="clearToken()" style="margin-left:6px;color:var(--sl-color-text-accent);cursor:pointer;background:none;border:none;font-size:12px;">Change</button>`,
+    `</span>`,
+    `</div>`,
+
+    // Body
+    `<div style="padding:14px;">`,
+
+    // Token input
+    `<div x-show="showTokenInput" style="margin-bottom:12px;">`,
+    `<label style="${labelStyle}">Bot Token</label>`,
+    `<div style="display:flex;gap:8px;">`,
+    `<input x-model="tokenInput" type="text" placeholder="Paste token from @BotFather" style="flex:1;${inputStyle}">`,
+    `<button @click="saveToken()" style="${btnPrimary}">Save</button>`,
+    `</div>`,
+    `</div>`
+  ]
+
+  // Required fields
+  for (const field of required) {
+    lines.push(...makeFieldInput(field))
+  }
+
+  // Optional fields toggle
+  if (optional.length > 0) {
+    lines.push(
+      `<button @click="showOptional = !showOptional" style="background:none;border:none;color:var(--sl-color-text-accent);font-size:12px;cursor:pointer;padding:4px 0;margin-bottom:8px;">`,
+      `<span x-text="showOptional ? 'Hide' : 'Show'"></span> optional (${optional.length})`,
+      `</button>`,
+      `<div x-show="showOptional" x-transition x-cloak>`
+    )
+    for (const field of optional) {
+      lines.push(...makeFieldInput(field))
+    }
+    lines.push(`</div>`)
+  }
+
+  // Actions
+  lines.push(
+    `<div style="display:flex;gap:8px;margin-top:12px;">`,
+    `<button @click="run()" :disabled="loading || !token" style="${btnPrimary}">`,
+    `<span x-show="!loading">Run</span>`,
+    `<span x-show="loading">Running...</span>`,
+    `</button>`,
+    `<button @click="reset()" style="${btnSecondary}">Reset</button>`,
+    `</div>`,
+
+    // Response
+    `<div x-show="response !== null || error !== null" x-transition x-cloak style="margin-top:12px;">`,
+    `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">`,
+    `<span style="font-size:12px;font-weight:600;" :style="responseOk === true ? 'color:#22c55e' : 'color:#ef4444'">Response</span>`,
+    `<button @click="showResponse = !showResponse" style="font-size:11px;cursor:pointer;background:none;border:none;color:var(--sl-color-gray-3);" x-text="showResponse ? 'Collapse' : 'Expand'"></button>`,
+    `</div>`,
+    `<pre x-show="showResponse" x-text="error ?? response" style="overflow:auto;max-height:400px;padding:10px;border:1px solid;border-radius:4px;font-size:12px;line-height:1.5;background:var(--sl-color-gray-7);white-space:pre-wrap;margin:0;" :style="responseOk === false || error ? 'border-color:#ef4444' : 'border-color:#22c55e'"></pre>`,
+    `</div>`,
+
+    // Close body, card, wrapper
+    `</div>`,
+    `</div>`,
+    `</div>`,
+    ""
+  )
+
+  return lines
 }
 
 // ── Method page ──
 
 const makeMethodPage = (method: ExtractedMethodShape): string => {
-  const description = method.methodDescription.map(removeHtmlTags).join(" ")
+  const description = joinSentences(method.methodDescription)
+  const tgLink = `[↗](https://core.telegram.org/bots/api#${method.methodName.toLowerCase()})`
   const lines: string[] = [
-    `# ${method.methodName}`,
+    "---",
+    `title: "${escapeYaml(method.methodName)}"`,
+    "---",
+    "",
+    `<style>.sl-markdown-content a{text-decoration:none;color:var(--sl-color-text-accent)}.sl-markdown-content a code{color:var(--sl-color-text-accent)}</style>`,
+    "",
+    `**Returns** ${renderLinkedType(method.returnType)} ${tgLink}`,
     "",
     description,
-    "",
-    `[Telegram docs](https://core.telegram.org/bots/api#${method.methodName.toLowerCase()})`,
     ""
   ]
 
+  lines.push(...makeApiRunnerBlock(method))
+
+  lines.push(...makeUsageExample(method))
+
   if (method.parameters && method.parameters.fields.length > 0) {
     lines.push("## Parameters", "")
-    lines.push("| Parameter | Type | Required | Description |")
-    lines.push("|-----------|------|----------|-------------|")
 
     for (const field of method.parameters.fields) {
-      const type = renderLinkedType(field.type, "../types/")
-      const required = field.required ? "Yes" : "No"
-      const desc = escapeMarkdownTable(field.description.join(" "))
-      lines.push(`| ${field.name} | ${type} | ${required} | ${desc} |`)
+      const type = renderLinkedType(field.type)
+      const req = field.required ? " `Required`" : ""
+      const desc = joinSentences(field.description)
+      lines.push(`**${field.name}** ${type}${req}\\`)
+      lines.push(desc, "")
     }
-
-    lines.push("")
   }
-
-  lines.push("## Return type", "")
-  lines.push(renderLinkedType(method.returnType, "../types/"), "")
 
   return lines.join("\n")
 }
 
+// ── Reverse index: type name → methods that use it ──
+
+type TypeUsageMap = Map<string, ExtractedMethodShape[]>
+
+const buildTypeUsageMap = (methods: ExtractedMethodShape[]): TypeUsageMap => {
+  const map: TypeUsageMap = new Map()
+
+  const addUsage = (typeName: string, method: ExtractedMethodShape) => {
+    if (!map.has(typeName)) map.set(typeName, [])
+    const list = map.get(typeName)!
+    if (!list.includes(method)) list.push(method)
+  }
+
+  const collectFromType = (type: NormalType, method: ExtractedMethodShape) => {
+    for (const name of type.typeNames) {
+      const baseName = name.replace(/\[\]+$/, "")
+      if (isComplexType(baseName)) addUsage(baseName, method)
+    }
+  }
+
+  for (const method of methods) {
+    collectFromType(method.returnType, method)
+    if (method.parameters) {
+      for (const field of method.parameters.fields) {
+        collectFromType(field.type, method)
+      }
+    }
+  }
+
+  return map
+}
+
 // ── Type page ──
 
-const makeTypePage = (extracted: ExtractedTypeShape): string => {
-  const description = extracted.description.join(" ")
+const makeTypePage = (
+  extracted: ExtractedTypeShape,
+  usageMap: TypeUsageMap
+): string => {
+  const description = joinSentences(extracted.description)
+  const tgLink = `[↗](https://core.telegram.org/bots/api#${extracted.typeName.toLowerCase()})`
   const lines: string[] = [
-    `# ${extracted.typeName}`,
+    "---",
+    `title: "${escapeYaml(extracted.typeName)}"`,
+    "---",
     "",
-    description,
+    `<style>.sl-markdown-content a{text-decoration:none;color:var(--sl-color-text-accent)}.sl-markdown-content a code{color:var(--sl-color-text-accent)}</style>`,
     "",
-    `[Telegram docs](https://core.telegram.org/bots/api#${extracted.typeName.toLowerCase()})`,
+    `${description} ${tgLink}`,
     ""
   ]
 
   if (extracted.type instanceof EntityFields) {
-    lines.push("## Fields", "")
-    lines.push("| Field | Type | Required | Description |")
-    lines.push("|-------|------|----------|-------------|")
+    const allFields = extracted.type.fields
+    const requiredFields = allFields.filter((f) => f.required)
 
-    for (const field of extracted.type.fields) {
-      const type = renderLinkedType(field.type, "")
-      const required = field.required ? "Yes" : "No"
-      const desc = escapeMarkdownTable(field.description.join(" "))
-      lines.push(`| ${field.name} | ${type} | ${required} | ${desc} |`)
+    // Summary
+    const parts = [`${allFields.length} fields`]
+    if (requiredFields.length > 0) parts.push(`${requiredFields.length} required`)
+    lines.push(parts.join(", ") + ".", "")
+
+    // Used by methods (before Fields)
+    const usedBy = usageMap.get(extracted.typeName)
+    if (usedBy && usedBy.length > 0) {
+      lines.push("## Used by", "")
+      for (const method of usedBy) {
+        lines.push(
+          `- [${method.methodName}](/api/methods/${toKebab(method.methodName)}/)`
+        )
+      }
+      lines.push("")
     }
 
-    lines.push("")
+    // Full fields with descriptions
+    lines.push("## Fields", "")
+    for (const field of allFields) {
+      const type = renderLinkedType(field.type)
+      const req = field.required ? " `Required`" : ""
+      const desc = joinSentences(field.description)
+      lines.push(`**${field.name}** ${type}${req}\\`)
+      lines.push(desc, "")
+    }
   } else {
     const typeNames = extracted.type.typeNames
     if (typeNames.length > 1) {
       lines.push("## Variants", "")
       for (const name of typeNames) {
-        lines.push(`- ${linkSingleType(name, "")}`)
+        lines.push(`- ${linkSingleType(name)}`)
+      }
+      lines.push("")
+    }
+
+    // Used by methods (for union types too)
+    const usedBy = usageMap.get(extracted.typeName)
+    if (usedBy && usedBy.length > 0) {
+      lines.push("## Used by", "")
+      for (const method of usedBy) {
+        lines.push(
+          `- [${method.methodName}](/api/methods/${toKebab(method.methodName)}/)`
+        )
       }
       lines.push("")
     }
@@ -114,43 +418,67 @@ const makeTypePage = (extracted: ExtractedTypeShape): string => {
   return lines.join("\n")
 }
 
-// ── README index ──
+// ── Index page ──
 
-const makeReadme = (input: {
+const makeIndex = (input: {
   apiVersion: string
   methods: ExtractedMethodShape[]
   types: ExtractedTypeShape[]
 }): string => {
-  const groups = new Map<string, ExtractedMethodShape[]>()
+  const sorted = [...input.methods].sort((a, b) =>
+    a.methodName.localeCompare(b.methodName)
+  )
 
-  for (const method of input.methods) {
-    const group = method.groupName ?? "other"
-    if (!groups.has(group)) groups.set(group, [])
-    groups.get(group)!.push(method)
-  }
+  const links = sorted
+    .map(m => `[${m.methodName}](/api/methods/${toKebab(m.methodName)}/)`)
+    .join(" · ")
 
   const lines: string[] = [
-    `# Telegram Bot API ${input.apiVersion}`,
+    "---",
+    `title: "Methods"`,
+    `description: "Telegram Bot API ${input.apiVersion} — ${input.methods.length} methods"`,
+    `tableOfContents: false`,
+    "---",
     "",
-    "Auto-generated from the [official documentation](https://core.telegram.org/bots/api).",
+    `<style>.sl-markdown-content a{text-decoration:none;color:var(--sl-color-text-accent)}.sl-markdown-content a code{color:var(--sl-color-text-accent)}</style>`,
     "",
-    "## Methods",
+    `**${input.methods.length}** methods from Bot API **${input.apiVersion}**. See also: [Types](/api/types/).`,
+    "",
+    links,
     ""
   ]
 
-  for (const [group, methods] of groups) {
-    lines.push(`### ${group}`, "")
-    for (const m of methods) {
-      lines.push(`- [${m.methodName}](methods/${toKebab(m.methodName)}.md)`)
-    }
-    lines.push("")
-  }
+  return lines.join("\n")
+}
 
-  lines.push("## Types", "")
-  for (const t of input.types) {
-    lines.push(`- [${t.typeName}](types/${toKebab(t.typeName)}.md)`)
-  }
-  lines.push("")
+// ── Types index page ──
+
+const makeTypesIndex = (input: {
+  apiVersion: string
+  types: ExtractedTypeShape[]
+}): string => {
+  const sorted = [...input.types].sort((a, b) =>
+    a.typeName.localeCompare(b.typeName)
+  )
+
+  const links = sorted
+    .map(t => `[${t.typeName}](/api/types/${toKebab(t.typeName)}/)`)
+    .join(" · ")
+
+  const lines: string[] = [
+    "---",
+    `title: "Types"`,
+    `description: "Telegram Bot API ${input.apiVersion} — ${input.types.length} types"`,
+    `tableOfContents: false`,
+    "---",
+    "",
+    `<style>.sl-markdown-content a{text-decoration:none;color:var(--sl-color-text-accent)}.sl-markdown-content a code{color:var(--sl-color-text-accent)}</style>`,
+    "",
+    `**${input.types.length}** types from Bot API **${input.apiVersion}**. See also: [Methods](/api/).`,
+    "",
+    links,
+    ""
+  ]
 
   return lines.join("\n")
 }
@@ -195,11 +523,13 @@ export class MarkdownWriterService extends Effect.Service<MarkdownWriterService>
             { concurrency: "unbounded" }
           )
 
+          const usageMap = buildTypeUsageMap(input.methods)
+
           yield* Effect.forEach(
             input.types,
             (type) => {
               const fileName = `${toKebab(type.typeName)}.md`
-              const content = makeTypePage(type)
+              const content = makeTypePage(type, usageMap)
               return Effect.tryPromise(() =>
                 writeFile(Path.join(typesDir, fileName), content)
               )
@@ -208,7 +538,11 @@ export class MarkdownWriterService extends Effect.Service<MarkdownWriterService>
           )
 
           yield* Effect.tryPromise(() =>
-            writeFile(Path.join(baseDir, "README.md"), makeReadme(input))
+            writeFile(Path.join(baseDir, "index.md"), makeIndex(input))
+          )
+
+          yield* Effect.tryPromise(() =>
+            writeFile(Path.join(typesDir, "index.md"), makeTypesIndex(input))
           )
         })
 

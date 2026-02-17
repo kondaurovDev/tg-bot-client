@@ -1,0 +1,197 @@
+---
+title: FAQ
+description: Frequently asked questions about Telegram Bot SDK
+head:
+  - tag: script
+    attrs:
+      type: application/ld+json
+    content: |
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "Why does this project exist?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Most existing Telegram Bot libraries for TypeScript either lack native type support, have confusing type definitions, or come with heavy middleware abstractions. This SDK has auto-generated types, zero runtime dependencies, and never-throwing error handling."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How is this different from other libraries?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Types are auto-generated from official docs (not manually maintained), zero runtime dependencies (native fetch), discriminated union error handling (never throws), includes a types-only package, and works in the browser."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How are types kept up-to-date?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "A code generator parses the official Telegram Bot API documentation, extracts type definitions and method signatures from the HTML, and outputs TypeScript. The current version covers 287 types and 165+ methods."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What happens when an API call fails?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "The client never throws exceptions. Every call returns a result with an 'ok' field. If ok is false, result.error is a tagged union you can pattern-match on."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Can I use just the types without the client?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. The @effect-ak/tg-bot-api package contains only TypeScript type definitions with zero runtime code."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Does this SDK use Effect (the framework)?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Effect is used only in the code generator at build time. The runtime packages have zero Effect dependency."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Where can I run this?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Anywhere that supports the native fetch API: Node.js 18+, Deno, Bun, browsers, Cloudflare Workers, AWS Lambda, Vercel, and other serverless platforms."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Can I try it without installing anything?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. The Playground lets you write and run a bot directly in your browser using a Monaco editor and a Web Worker."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Long polling or webhooks?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Both are supported. Long polling works out of the box with no server required. Webhooks are available via createWebhook() for server-based deployments."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Which package should I install?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Building a bot: @effect-ak/tg-bot. Just calling API methods: @effect-ak/tg-bot-client. Only need types: @effect-ak/tg-bot-api."
+            }
+          }
+        ]
+      }
+---
+
+## Why does this project exist?
+
+Most existing Telegram Bot libraries for TypeScript either lack native type support, have confusing type definitions, or come with heavy middleware abstractions. This SDK takes a different approach:
+
+- **Types are auto-generated** from the official Telegram documentation — they never go stale
+- **Zero runtime dependencies** — uses native `fetch`, nothing else
+- **The client never throws** — every API call returns a typed result you can pattern-match on
+
+## How is this different from other libraries?
+
+| Feature | Telegram Bot SDK | grammY | Telegraf | node-telegram-bot-api |
+|---------|-----------------|--------|----------|-----------------------|
+| Types source | Auto-generated from official docs | Manually maintained | Manually maintained (typegram) | Community `@types/` |
+| Runtime dependencies | None (native fetch) | Yes | Yes | Yes |
+| Error handling | Discriminated union, never throws | try/catch + middleware | try/catch + middleware | EventEmitter |
+| Types-only package | Yes | No | No | No |
+| Works in browser | Yes | Partial | No | No |
+| Bot API version lag | Minimal (re-run codegen) | Days to weeks | Weeks to months | Months |
+
+## How are types kept up-to-date?
+
+A code generator parses the official Telegram Bot API documentation at [core.telegram.org](https://core.telegram.org/bots/api), extracts type definitions and method signatures from the HTML, and outputs TypeScript. When Telegram updates the API, re-running the generator produces updated types immediately. The current version covers 287 types and 165+ methods.
+
+## What happens when an API call fails?
+
+The client never throws exceptions. Every call returns a result with an `ok` field:
+
+```typescript
+const result = await client.execute("send_message", {
+  chat_id: "123",
+  text: "Hello"
+})
+
+if (result.ok) {
+  console.log(result.data.message_id)
+} else {
+  // result.error is a tagged union:
+  // NotOkResponse | UnexpectedResponse | ClientInternalError | ...
+  console.log(result.error._tag)
+}
+```
+
+## Can I use just the types without the client?
+
+Yes. The `@effect-ak/tg-bot-api` package contains only TypeScript type definitions with zero runtime code. Install it and use the types with any HTTP client you prefer:
+
+```bash
+npm install @effect-ak/tg-bot-api
+```
+
+## Does this SDK use Effect (the framework)?
+
+Effect is used only in the code generator at build time. The runtime packages (`@effect-ak/tg-bot-client` and `@effect-ak/tg-bot`) have zero Effect dependency. You do not need to know or use Effect to work with this SDK.
+
+## Where can I run this?
+
+Anywhere that supports the native `fetch` API:
+
+- Node.js 18+
+- Deno
+- Bun
+- Browsers
+- Cloudflare Workers
+- AWS Lambda, Vercel, and other serverless platforms
+
+## Can I try it without installing anything?
+
+Yes. The [Playground](/playground/) lets you write and run a bot directly in your browser using a Monaco editor and a Web Worker. No local setup needed.
+
+## How do I send files?
+
+Pass a `File`, `Blob`, or `ReadableStream` as a parameter value. The client automatically encodes the request as multipart `FormData`:
+
+```typescript
+const result = await client.execute("send_document", {
+  chat_id: "123",
+  document: new File([buffer], "report.pdf")
+})
+```
+
+## Long polling or webhooks?
+
+Both are supported.
+
+**Long polling** works out of the box with no server required — just call `.run()`:
+
+```typescript
+createBot()
+  .onMessage(({ text }) => [
+    text(({ ctx }) => ctx.reply("Got it"))
+  ])
+  .run({ bot_token: "YOUR_BOT_TOKEN" })
+```
+
+**Webhooks** are available via `createWebhook()` for server-based deployments.
+
+## Which package should I install?
+
+- **Building a bot?** → `npm install @effect-ak/tg-bot` (includes the client)
+- **Just calling API methods?** → `npm install @effect-ak/tg-bot-client`
+- **Only need types?** → `npm install @effect-ak/tg-bot-api`

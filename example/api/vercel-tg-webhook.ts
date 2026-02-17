@@ -1,4 +1,4 @@
-import { createWebhookHandler } from "@effect-ak/tg-bot"
+import { createWebhook } from "@effect-ak/tg-bot"
 
 const token = process.env.TOKEN
 
@@ -6,7 +6,7 @@ if (!token) {
   throw new Error("TOKEN environment variable is required")
 }
 
-const GITHUB_URL = "https://github.com/effect-ak/tg-bot-client"
+const GITHUB_URL = "https://github.com/kondaurovDev/tg-bot-sdk"
 const NPM_URL = "https://www.npmjs.com/package/@effect-ak/tg-bot"
 
 const startMessage = `
@@ -29,9 +29,9 @@ Quick Start:
 
 <code>npm install @effect-ak/tg-bot</code>
 
-<pre language="typescript">import { createWebhookHandler } from "@effect-ak/tg-bot"
+<pre language="typescript">import { createWebhook } from "@effect-ak/tg-bot"
 
-const bot = createWebhookHandler({
+const bot = createWebhook({
   bot_token: process.env.TOKEN,
   on_message: [
     {
@@ -66,7 +66,7 @@ ${GITHUB_URL}/blob/main/example/api/vercel-tg-webhook.ts
 The entire bot is ~60 lines of TypeScript!
 `.trim()
 
-const bot = createWebhookHandler({
+const bot = createWebhook({
   bot_token: token,
 
   on_message: [

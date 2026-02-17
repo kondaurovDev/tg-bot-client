@@ -1,14 +1,87 @@
 import type { Api } from "@effect-ak/tg-bot-api"
 
-import { TgBotClientError } from "./errors"
-import { isFileContent, isTgBotApiResponse } from "./guards"
-import { snakeToCamel } from "./utils"
 import type { TgClientConfig } from "./client"
+
+// --- result ---
+
+export type ClientErrorReason =
+  | { _tag: "NotOkResponse"; errorCode?: number; details?: string }
+  | { _tag: "UnexpectedResponse"; response: unknown }
+  | { _tag: "ClientInternalError"; cause: unknown }
+  | { _tag: "UnableToGetFile"; cause: unknown }
+  | { _tag: "BotHandlerError"; cause: unknown }
+  | { _tag: "NotJsonResponse"; response: unknown }
+
+export type ClientResult<T> =
+  | { readonly ok: true; readonly data: T }
+  | { readonly ok: false; readonly error: ClientErrorReason }
+
+// --- guards ---
+
+export interface FileContent {
+  file_content: Uint8Array<ArrayBuffer>
+  file_name: string
+}
+
+const isFileContent = (input: unknown): input is FileContent =>
+  typeof input == "object" &&
+  input != null &&
+  "file_content" in input &&
+  input.file_content instanceof Uint8Array &&
+  "file_name" in input &&
+  typeof input.file_name == "string"
+
+interface TgBotApiResponseSchema {
+  ok: boolean
+  error_code?: number
+  description?: string
+  result?: unknown
+}
+
+const isTgBotApiResponse = (
+  input: unknown
+): input is TgBotApiResponseSchema =>
+  typeof input == "object" &&
+  input != null &&
+  "ok" in input &&
+  typeof input.ok == "boolean"
+
+// --- message effects ---
+
+export const MESSAGE_EFFECTS = {
+  "🔥": "5104841245755180586",
+  "👍": "5107584321108051014",
+  "👎": "5104858069142078462",
+  "❤️": "5159385139981059251",
+  "🎉": "5046509860389126442",
+  "💩": "5046589136895476101"
+} as const
+
+export type MessageEffect = keyof typeof MESSAGE_EFFECTS
+
+export const messageEffectIdCodes = Object.keys(
+  MESSAGE_EFFECTS
+) as MessageEffect[]
+
+const isMessageEffect = (input: unknown): input is MessageEffect => {
+  return typeof input === "string" && input in MESSAGE_EFFECTS
+}
+
+// --- execute ---
+
+const snakeToCamel = (str: string): string => {
+  return str.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase())
+}
+
+type WithMessageEffect<T> =
+  T extends { message_effect_id?: string }
+    ? Omit<T, "message_effect_id"> & { message_effect_id?: MessageEffect | (string & {}) }
+    : T
 
 export type ExecuteMethod = <M extends keyof Api>(
   method: M,
-  input: Parameters<Api[M]>[0]
-) => Promise<ReturnType<Api[M]>>
+  input: WithMessageEffect<Parameters<Api[M]>[0]>
+) => Promise<ClientResult<ReturnType<Api[M]>>>
 
 export async function executeTgBotMethod<M extends keyof Api>(
   params: {
@@ -16,8 +89,13 @@ export async function executeTgBotMethod<M extends keyof Api>(
     method: M
     input: Parameters<Api[M]>[0]
   }
-): Promise<ReturnType<Api[M]>> {
-  const { config, method, input } = params
+): Promise<ClientResult<ReturnType<Api[M]>>> {
+  const { config, method } = params
+  let { input } = params
+
+  if ("message_effect_id" in input && isMessageEffect(input.message_effect_id)) {
+    input = { ...input, message_effect_id: MESSAGE_EFFECTS[input.message_effect_id] }
+  }
 
   let httpResponse: Response
   try {
@@ -29,37 +107,32 @@ export async function executeTgBotMethod<M extends keyof Api>(
       }
     )
   } catch (cause) {
-    throw new TgBotClientError({
-      cause: { _tag: "ClientInternalError", cause }
-    })
+    return { ok: false, error: { _tag: "ClientInternalError", cause } }
   }
 
   let response: unknown
   try {
     response = await httpResponse.json()
   } catch {
-    throw new TgBotClientError({
-      cause: { _tag: "NotJsonResponse", response: httpResponse }
-    })
+    return { ok: false, error: { _tag: "NotJsonResponse", response: httpResponse } }
   }
 
   if (!isTgBotApiResponse(response)) {
-    throw new TgBotClientError({
-      cause: { _tag: "UnexpectedResponse", response }
-    })
+    return { ok: false, error: { _tag: "UnexpectedResponse", response } }
   }
 
   if (!httpResponse.ok) {
-    throw new TgBotClientError({
-      cause: {
+    return {
+      ok: false,
+      error: {
         _tag: "NotOkResponse",
         ...(response.error_code ? { errorCode: response.error_code } : {}),
         ...(response.description ? { details: response.description } : {})
       }
-    })
+    }
   }
 
-  return response.result as ReturnType<Api[M]>
+  return { ok: true, data: response.result as ReturnType<Api[M]> }
 }
 
 export const makePayload = (body: object): FormData | undefined => {

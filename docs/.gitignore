@@ -1,0 +1,8 @@
+node_modules/
+dist/
+.astro/
+
+# Auto-generated API reference (codegen)
+src/content/docs/api/methods/
+src/content/docs/api/types/
+src/content/docs/api/index.md

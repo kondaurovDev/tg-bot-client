@@ -31,9 +31,26 @@ Lightweight HTTP client for Telegram Bot API with full type safety.
 [![NPM Version](https://img.shields.io/npm/v/%40effect-ak%2Ftg-bot)](https://www.npmjs.com/package/@effect-ak/tg-bot)
 ![NPM Downloads](https://img.shields.io/npm/dw/%40effect-ak%2Ftg-bot)
 
-Effect-based bot runner with automatic long polling and error handling.
+Bot framework with fluent builder API, long polling, webhooks, and hot reload.
 
 ## 🚀 Quick Start
+
+### Bot Framework
+
+```bash
+npm install @effect-ak/tg-bot
+```
+
+```typescript
+import { createBot } from "@effect-ak/tg-bot"
+
+await createBot()
+  .onMessage(({ command, text }) => [
+    command("/start", ({ ctx }) => ctx.reply("Welcome!")),
+    text(({ update, ctx }) => ctx.reply(`You said: ${update.text}`))
+  ])
+  .run({ bot_token: "YOUR_BOT_TOKEN" })
+```
 
 ### HTTP Client
 
@@ -51,31 +68,6 @@ const client = makeTgBotClient({
 await client.execute("sendMessage", {
   chat_id: "123456789",
   text: "Hello, World!"
-})
-```
-
-### Bot Runner
-
-```bash
-npm install @effect-ak/tg-bot effect
-```
-
-```typescript
-import { runTgChatBot } from "@effect-ak/tg-bot"
-
-runTgChatBot({
-  bot_token: "YOUR_BOT_TOKEN",
-  mode: "single",
-  on_message: [
-    {
-      match: ({ ctx }) => ctx.command === "/start",
-      handle: ({ ctx }) => ctx.reply("Welcome!")
-    },
-    {
-      match: ({ update }) => !!update.text,
-      handle: ({ update, ctx }) => ctx.reply(`You said: ${update.text}`)
-    }
-  ]
 })
 ```
 

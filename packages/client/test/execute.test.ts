@@ -1,8 +1,6 @@
 import { describe, expect, vi } from "vitest"
 
 import { fixture } from "./fixture"
-import { MESSAGE_EFFECTS } from "~/const"
-import { executeTgBotMethod } from "~/execute"
 
 const fetchSpy = vi.spyOn(global, "fetch")
 
@@ -10,10 +8,10 @@ describe("telegram bot client, execute method", () => {
   fixture("send dice", async ({ chat_id, client }) => {
     // skip();
 
-    const response = await client.execute("send_dice", {
+    const result = await client.execute("send_dice", {
       chat_id,
       emoji: "🎲",
-      message_effect_id: MESSAGE_EFFECTS["🔥"]
+      message_effect_id: "🔥"
     })
 
     const url = fetchSpy.mock.calls[0][0] as string
@@ -21,28 +19,34 @@ describe("telegram bot client, execute method", () => {
 
     expect(lastPath).toEqual("sendDice")
 
-    expect(response.chat.id).toBeDefined()
+    expect(result.ok).toBe(true)
+    if (result.ok) {
+      expect(result.data.chat.id).toBeDefined()
+    }
   })
 
   fixture("send message", async ({ chat_id, client, skip }) => {
     skip()
 
-    const response = await client.execute("send_message", {
+    const result = await client.execute("send_message", {
       chat_id,
       text: "hey again",
-      message_effect_id: MESSAGE_EFFECTS["🔥"]
+      message_effect_id: "🔥"
     })
 
-    expect(response.chat.id).toBeDefined()
+    expect(result.ok).toBe(true)
+    if (result.ok) {
+      expect(result.data.chat.id).toBeDefined()
+    }
   })
 
   fixture("send message with keyboard", async ({ chat_id, client, skip }) => {
     skip()
 
-    const response = await client.execute("send_message", {
+    const result = await client.execute("send_message", {
       chat_id,
       text: "hey again!",
-      message_effect_id: MESSAGE_EFFECTS["🎉"],
+      message_effect_id: "🎉",
       reply_markup: {
         inline_keyboard: [
           [
@@ -57,15 +61,18 @@ describe("telegram bot client, execute method", () => {
       }
     })
 
-    expect(response.chat.id).toBeDefined()
+    expect(result.ok).toBe(true)
+    if (result.ok) {
+      expect(result.data.chat.id).toBeDefined()
+    }
   })
 
   fixture("send document", async ({ chat_id, client, skip }) => {
     skip()
 
-    const response = await client.execute("send_document", {
+    const result = await client.execute("send_document", {
       chat_id,
-      message_effect_id: MESSAGE_EFFECTS["🎉"],
+      message_effect_id: "🎉",
       document: {
         file_content: Buffer.from("Hello!"),
         file_name: "hello.txt"
@@ -73,9 +80,11 @@ describe("telegram bot client, execute method", () => {
       caption: "simple text file"
     })
 
-    expect(response.document?.file_id).toBeDefined()
-
-    expect(response.chat.id).toBeDefined()
+    expect(result.ok).toBe(true)
+    if (result.ok) {
+      expect(result.data.document?.file_id).toBeDefined()
+      expect(result.data.chat.id).toBeDefined()
+    }
   })
 
   fixture("send message with action", async ({ chat_id, client }) => {
@@ -86,12 +95,15 @@ describe("telegram bot client, execute method", () => {
 
     await new Promise((res) => setTimeout(res, 5000))
 
-    const response = await client.execute("send_message", {
+    const result = await client.execute("send_message", {
       chat_id,
       text: "hey again with typings",
-      message_effect_id: MESSAGE_EFFECTS["🔥"]
+      message_effect_id: "🔥"
     })
 
-    expect(response.chat.id).toBeDefined()
+    expect(result.ok).toBe(true)
+    if (result.ok) {
+      expect(result.data.chat.id).toBeDefined()
+    }
   })
 })
