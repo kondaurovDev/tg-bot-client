@@ -1,5 +1,13 @@
 # @effect-ak/tg-bot-client
 
+## 1.4.1
+
+### Patch Changes
+
+- 8ac8abd: Add homepage, keywords, and update documentation links to tg-bot-sdk.website
+- Updated dependencies [8ac8abd]
+  - @effect-ak/tg-bot-api@1.3.1
+
 ## 1.4.0
 
 ### Minor Changes
