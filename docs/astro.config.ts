@@ -3,7 +3,9 @@ import starlight from "@astrojs/starlight";
 import sitemap from "@astrojs/sitemap";
 import alpine from "@astrojs/alpinejs";
 import tailwindcss from "@tailwindcss/vite";
-import { rename, unlink } from "node:fs/promises";
+import { readdir, readFile, rename, unlink, writeFile } from "node:fs/promises";
+import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 
 export default defineConfig({
   site: "https://tg-bot-sdk.website",
@@ -16,8 +18,26 @@ export default defineConfig({
       name: "flatten-sitemap",
       hooks: {
         "astro:build:done": async ({ dir }) => {
+          // Rename sitemap-0.xml to sitemap.xml
           await unlink(new URL("sitemap-index.xml", dir));
           await rename(new URL("sitemap-0.xml", dir), new URL("sitemap.xml", dir));
+
+          // Replace sitemap-index.xml -> sitemap.xml in all HTML files
+          const dirPath = fileURLToPath(dir);
+          const replaceInDir = async (currentDir: string) => {
+            for (const entry of await readdir(currentDir, { withFileTypes: true })) {
+              const fullPath = join(currentDir, entry.name);
+              if (entry.isDirectory()) {
+                await replaceInDir(fullPath);
+              } else if (entry.name.endsWith(".html")) {
+                const content = await readFile(fullPath, "utf-8");
+                if (content.includes("sitemap-index.xml")) {
+                  await writeFile(fullPath, content.replaceAll("sitemap-index.xml", "sitemap.xml"));
+                }
+              }
+            }
+          };
+          await replaceInDir(dirPath);
         },
       },
     },
