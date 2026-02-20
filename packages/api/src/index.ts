@@ -1,4 +1,5 @@
 export * from "./event-handlers"
+export * from "./login-widget"
 export * from "./specification/api"
 export * from "./specification/types"
 export * from "./specification/webapp"
