@@ -3,7 +3,7 @@ import starlight from "@astrojs/starlight";
 import sitemap from "@astrojs/sitemap";
 import alpine from "@astrojs/alpinejs";
 import tailwindcss from "@tailwindcss/vite";
-import { readdir, readFile, rename, unlink, writeFile } from "node:fs/promises";
+import { mkdir, readdir, readFile, rename, unlink, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -18,11 +18,13 @@ export default defineConfig({
       name: "flatten-sitemap",
       hooks: {
         "astro:build:done": async ({ dir }) => {
-          // Rename sitemap-0.xml to sitemap.xml
+          // Move sitemap into sitemap/ subdirectory
+          const sitemapDir = new URL("sitemap/", dir);
+          await mkdir(sitemapDir, { recursive: true });
           await unlink(new URL("sitemap-index.xml", dir));
-          await rename(new URL("sitemap-0.xml", dir), new URL("sitemap.xml", dir));
+          await rename(new URL("sitemap-0.xml", dir), new URL("sitemap/sitemap.xml", dir));
 
-          // Replace sitemap-index.xml -> sitemap.xml in all HTML files
+          // Replace sitemap-index.xml -> sitemap/sitemap.xml in all HTML files
           const dirPath = fileURLToPath(dir);
           const replaceInDir = async (currentDir: string) => {
             for (const entry of await readdir(currentDir, { withFileTypes: true })) {
@@ -32,7 +34,7 @@ export default defineConfig({
               } else if (entry.name.endsWith(".html")) {
                 const content = await readFile(fullPath, "utf-8");
                 if (content.includes("sitemap-index.xml")) {
-                  await writeFile(fullPath, content.replaceAll("sitemap-index.xml", "sitemap.xml"));
+                  await writeFile(fullPath, content.replaceAll("sitemap-index.xml", "sitemap/sitemap.xml"));
                 }
               }
             }

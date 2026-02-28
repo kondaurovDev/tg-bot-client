@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://tg-bot-sdk.website/sitemap.xml
+Sitemap: https://tg-bot-sdk.website/sitemap/sitemap.xml
