@@ -1,5 +1,14 @@
 # @effect-ak/tg-bot
 
+## 1.3.2
+
+### Patch Changes
+
+- e86bf1b: feat(api): update to Telegram Bot API 9.5
+- Updated dependencies [e86bf1b]
+  - @effect-ak/tg-bot-api@1.3.3
+  - @effect-ak/tg-bot-client@1.4.2
+
 ## 1.3.1
 
 ### Patch Changes
