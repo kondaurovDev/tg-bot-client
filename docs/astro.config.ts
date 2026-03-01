@@ -97,6 +97,29 @@ export default defineConfig({
             content: "summary_large_image",
           },
         },
+        {
+          tag: "meta",
+          attrs: {
+            name: "theme-color",
+            content: "#229ED9",
+          },
+        },
+        {
+          tag: "meta",
+          attrs: {
+            name: "keywords",
+            content:
+              "telegram bot api, typescript, telegram bot sdk, telegram bot typescript, bot api types, telegram bot client",
+          },
+        },
+        {
+          tag: "link",
+          attrs: {
+            rel: "icon",
+            type: "image/x-icon",
+            href: "/favicon.ico",
+          },
+        },
       ],
       favicon: "/favicon.svg",
       sidebar: [

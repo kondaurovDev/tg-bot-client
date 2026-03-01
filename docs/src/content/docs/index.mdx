@@ -1,14 +1,7 @@
 ---
-title: TypeScript SDK for Telegram Bot API
+title: Telegram Bot API for TypeScript
 description: Type-safe TypeScript SDK for building Telegram bots. HTTP client, bot runner with long polling and webhooks, and full Bot API type coverage.
 template: splash
-hero:
-  title: Telegram Bot API Made Simple
-  tagline: Type-safe client, auto-generated types, and a bot runner — integrate the Bot API in minutes with zero dependencies.
-  actions:
-    - text: Open Playground
-      link: /playground/
-      icon: right-arrow
 head:
   - tag: script
     attrs:
@@ -32,27 +25,53 @@ head:
     content: |
       {
         "@context": "https://schema.org",
-        "@type": "SoftwareSourceCode",
+        "@type": "SoftwareApplication",
         "name": "Telegram Bot SDK",
-        "description": "Type-safe TypeScript SDK for building Telegram bots",
-        "codeRepository": "https://github.com/kondaurovDev/tg-bot-sdk",
+        "description": "Type-safe TypeScript SDK for building Telegram bots with auto-generated types, HTTP client, and bot runner",
+        "url": "https://tg-bot-sdk.website",
+        "applicationCategory": "DeveloperApplication",
+        "operatingSystem": "Cross-platform",
         "programmingLanguage": "TypeScript",
-        "runtimePlatform": "Node.js",
-        "license": "https://opensource.org/licenses/MIT"
+        "codeRepository": "https://github.com/kondaurovDev/tg-bot-sdk",
+        "license": "https://opensource.org/licenses/MIT",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        }
       }
 ---
 
 import { Card, CardGrid, LinkCard, Tabs, TabItem } from '@astrojs/starlight/components';
 import stats from '../../data/bot-api-stats.json';
 
+Every other TypeScript library for the Telegram Bot API maintains its types by hand. When Telegram releases a new API version, someone has to update them — and until they do, your types are wrong.
+
+This project generates types directly from the [official Telegram documentation](https://core.telegram.org/bots/api). Re-run the code generator and you have the latest API — {stats.typeCount} types and {stats.methodCount} methods, always matching what Telegram actually ships. The client and bot runner are built on top: zero dependencies, no exceptions — just typed results you can pattern-match on.
+
 ## Features
 
 <CardGrid>
   <LinkCard title="TypeScript Types" description="Full type coverage for the Telegram Bot API, auto-generated from official docs." href="/api-types/bot-api/" />
   <LinkCard title="Client" description="Lightweight, type-safe client for calling any Bot API method." href="/client/usage/" />
-  <LinkCard title="Build Bots" description="Run Telegram bots with long polling or webhooks — zero dependencies." href="/bot-runner/writing-bots/" />
+  <LinkCard title="Build Bots" description="Run Telegram bots with long polling or webhooks." href="/bot-runner/writing-bots/" />
   <LinkCard title="API Reference" description={`${stats.methodCount} methods, ${stats.typeCount} types — Bot API v${stats.version}.`} href="/api/" />
 </CardGrid>
+
+## Getting Started
+
+```bash
+# Full bot framework (includes client and types)
+npm install @effect-ak/tg-bot
+
+# HTTP client only
+npm install @effect-ak/tg-bot-client
+
+# Types only (zero runtime code)
+npm install @effect-ak/tg-bot-api
+```
+
+Read the [Introduction](/getting-started/introduction/) or jump to [Quick Start](/getting-started/quick-start/) to build your first bot in under 5 minutes.
 
 ## Examples
 
@@ -123,14 +142,3 @@ import stats from '../../data/bot-api-stats.json';
   </TabItem>
 </Tabs>
 
-## How It Compares
-
-| | Telegram Bot SDK | grammY | Telegraf | node-telegram-bot-api |
-|---|---|---|---|---|
-| **Types** | Auto-generated from official docs | Manually maintained | Manually maintained | Community `@types/` |
-| **Dependencies** | None (native fetch) | Yes | Yes | Yes |
-| **Error handling** | Typed result, never throws | try/catch | try/catch | EventEmitter |
-| **Types-only package** | Yes | No | No | No |
-| **Works in browser** | Yes | Partial | No | No |
-| **API version lag** | Minimal (re-run codegen) | Days to weeks | Weeks to months | Months |
-| **Platforms** | Node.js, Deno, Bun, Cloudflare Workers, browsers | Node.js, Deno | Node.js | Node.js |
