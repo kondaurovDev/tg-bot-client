@@ -18,6 +18,18 @@ import { MarkdownWriterService } from "./service/markdown"
 import { BotApiCodegenRuntime, WebAppCodegenRuntime } from "./runtime"
 import { TsMorpthWriter } from "./service/code-writers"
 
+const rootDir = path.resolve(import.meta.dirname, "..", "..", "..")
+const pkgDir = path.resolve(import.meta.dirname, "..")
+
+const updateReadmeBadge = (pattern: RegExp, replacement: string) => {
+  for (const dir of [pkgDir, rootDir]) {
+    const readmePath = path.resolve(dir, dir === pkgDir ? "readme.md" : "README.md")
+    if (!fs.existsSync(readmePath)) continue
+    const content = fs.readFileSync(readmePath, "utf-8")
+    fs.writeFileSync(readmePath, content.replace(pattern, replacement))
+  }
+}
+
 const generateBotApi = Effect.fn("generate bot api")(function* () {
   const pageProvider = yield* PageProviderService
   const apiPage = yield* pageProvider.api
@@ -39,18 +51,12 @@ const generateBotApi = Effect.fn("generate bot api")(function* () {
 
   yield* tsMorph.saveFiles
 
-  const pkgDir = path.resolve(import.meta.dirname, "..")
   fs.writeFileSync(
     path.resolve(pkgDir, "bot-api-version.json"),
     JSON.stringify({ version: apiVersion }, null, 2) + "\n"
   )
 
-  const readmePath = path.resolve(pkgDir, "readme.md")
-  const readme = fs.readFileSync(readmePath, "utf-8")
-  fs.writeFileSync(
-    readmePath,
-    readme.replace(/BotApi-[\d.]+/, `BotApi-${apiVersion}`)
-  )
+  updateReadmeBadge(/BotApi-[\d.]+/, `BotApi-${apiVersion}`)
 })
 
 const generateWebApp = Effect.fn("generate web app")(function* () {
@@ -68,13 +74,12 @@ const generateWebApp = Effect.fn("generate web app")(function* () {
 
   yield* tsMorph.saveFiles
 
-  const pkgDir = path.resolve(import.meta.dirname, "..")
-  const readmePath = path.resolve(pkgDir, "readme.md")
-  const readme = fs.readFileSync(readmePath, "utf-8")
   fs.writeFileSync(
-    readmePath,
-    readme.replace(/Telegram\.WebApp-[\w.]+/, `Telegram.WebApp-${webAppVersion}`)
+    path.resolve(pkgDir, "mini-app-version.json"),
+    JSON.stringify({ version: webAppVersion }, null, 2) + "\n"
   )
+
+  updateReadmeBadge(/Telegram\.WebApp-[\w.]+/, `Telegram.WebApp-${webAppVersion}`)
 })
 
 const gen = Effect.fn("Generate")(function* () {

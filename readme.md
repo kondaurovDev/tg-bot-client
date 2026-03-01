@@ -1,11 +1,8 @@
 # Telegram Bot TypeScript SDK
 
 [![Docs](https://img.shields.io/badge/Docs-tg--bot--sdk.website-blue)](https://tg-bot-sdk.website)
-![Telegram Bot API](https://img.shields.io/badge/BotApi-9.4-blue)
-![Telegram WebApp](https://img.shields.io/badge/Telegram.WebApp-9.1-blue)
-[![tg-bot-api](https://img.shields.io/npm/v/%40effect-ak%2Ftg-bot-api?label=tg-bot-api&color=green)](https://www.npmjs.com/package/@effect-ak/tg-bot-api)
-[![tg-bot-client](https://img.shields.io/npm/v/%40effect-ak%2Ftg-bot-client?label=tg-bot-client&color=green)](https://www.npmjs.com/package/@effect-ak/tg-bot-client)
-[![tg-bot](https://img.shields.io/npm/v/%40effect-ak%2Ftg-bot?label=tg-bot&color=green)](https://www.npmjs.com/package/@effect-ak/tg-bot)
+![Telegram Bot API](https://img.shields.io/badge/BotApi-9.5-blue)
+![Telegram WebApp](https://img.shields.io/badge/Telegram.WebApp-9.5-orange)
 
 Type-safe TypeScript SDK for building Telegram bots, automatically generated from official Telegram Bot API documentation.
 
