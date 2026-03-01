@@ -94,6 +94,8 @@ head:
       }
 ---
 
+import stats from '../../data/bot-api-stats.json';
+
 ## Why does this project exist?
 
 Most existing Telegram Bot libraries for TypeScript either lack native type support, have confusing type definitions, or come with heavy middleware abstractions. This SDK takes a different approach:
@@ -115,7 +117,7 @@ Most existing Telegram Bot libraries for TypeScript either lack native type supp
 
 ## How are types kept up-to-date?
 
-A code generator parses the official Telegram Bot API documentation at [core.telegram.org](https://core.telegram.org/bots/api), extracts type definitions and method signatures from the HTML, and outputs TypeScript. When Telegram updates the API, re-running the generator produces updated types immediately. The current version covers 287 types and 165+ methods.
+A code generator parses the official Telegram Bot API documentation at [core.telegram.org](https://core.telegram.org/bots/api), extracts type definitions and method signatures from the HTML, and outputs TypeScript. When Telegram updates the API, re-running the generator produces updated types immediately. The current version covers {stats.typeCount} types and {stats.methodCount} methods.
 
 ## What happens when an API call fails?
 

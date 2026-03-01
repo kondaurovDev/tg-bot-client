@@ -3,6 +3,8 @@ title: Bot API Types
 description: TypeScript types for Telegram Bot API
 ---
 
+import stats from '../../../data/bot-api-stats.json';
+
 The `@effect-ak/tg-bot-api` package provides complete TypeScript types auto-generated from the [official Telegram Bot API documentation](https://core.telegram.org/bots/api).
 
 ## Installation
@@ -15,7 +17,7 @@ npm install @effect-ak/tg-bot-api
 
 ### Telegram Domain Types
 
-Every object from the [Bot API docs](https://core.telegram.org/bots/api#available-types) has a corresponding TypeScript interface — **287 types** total: `Message`, `User`, `Chat`, `Update`, `CallbackQuery`, `InlineKeyboardMarkup`, `PhotoSize`, `Document`, and more.
+Every object from the [Bot API docs](https://core.telegram.org/bots/api#available-types) has a corresponding TypeScript interface — **{stats.typeCount} types** total: `Message`, `User`, `Chat`, `Update`, `CallbackQuery`, `InlineKeyboardMarkup`, `PhotoSize`, `Document`, and more.
 
 ```typescript
 import type { Message, User, Chat, Update, InlineKeyboardMarkup } from "@effect-ak/tg-bot-api"
@@ -23,7 +25,7 @@ import type { Message, User, Chat, Update, InlineKeyboardMarkup } from "@effect-
 
 ### Api Interface
 
-The `Api` interface maps every Bot API method name to a function signature with typed input and return type. This gives you a single place to look up any method — **165 methods** total.
+The `Api` interface maps every Bot API method name to a function signature with typed input and return type. This gives you a single place to look up any method — **{stats.methodCount} methods** total.
 
 ```typescript
 import type { Api } from "@effect-ak/tg-bot-api"
@@ -33,7 +35,7 @@ interface Api {
   send_message(_: SendMessageInput): Message
   get_me(_: GetMeInput): User
   send_photo(_: SendPhotoInput): Message
-  // ... 165 methods
+  // ... all methods
 }
 ```
 

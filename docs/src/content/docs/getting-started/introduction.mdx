@@ -3,6 +3,8 @@ title: Introduction
 description: What Telegram Bot SDK is and how its packages work together
 ---
 
+import stats from '../../../data/bot-api-stats.json';
+
 Telegram Bot SDK is a TypeScript toolkit for working with the Telegram Bot API. It consists of three packages that can be used independently or together.
 
 ## What you can do
@@ -11,7 +13,7 @@ Telegram Bot SDK is a TypeScript toolkit for working with the Telegram Bot API. 
 
 **Build a bot** — define handlers for commands, text messages, and callbacks with a fluent builder API. Run it with long polling (no server needed) or webhooks. → [How to Write Bots](/bot-runner/writing-bots/)
 
-**Use just the types** — 287 types and 165 methods, auto-generated from official Telegram docs. No runtime code, works with any HTTP client. → [API Reference](/api/)
+**Use just the types** — {stats.typeCount} types and {stats.methodCount} methods, auto-generated from official Telegram docs. No runtime code, works with any HTTP client. → [API Reference](/api/)
 
 ## Packages
 

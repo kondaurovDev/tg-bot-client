@@ -20,6 +20,7 @@ import { TsMorpthWriter } from "./service/code-writers"
 
 const rootDir = path.resolve(import.meta.dirname, "..", "..", "..")
 const pkgDir = path.resolve(import.meta.dirname, "..")
+const docsDataDir = path.resolve(rootDir, "docs", "src", "data")
 
 const updateReadmeBadge = (pattern: RegExp, replacement: string) => {
   for (const dir of [pkgDir, rootDir]) {
@@ -55,6 +56,24 @@ const generateBotApi = Effect.fn("generate bot api")(function* () {
     path.resolve(pkgDir, "bot-api-version.json"),
     JSON.stringify({ version: apiVersion }, null, 2) + "\n"
   )
+
+  const methodCount = entities.methods.length
+  const typeCount = entities.types.length
+
+  fs.writeFileSync(
+    path.resolve(docsDataDir, "bot-api-stats.json"),
+    JSON.stringify({ version: apiVersion, methodCount, typeCount }, null, 2) + "\n"
+  )
+
+  // Update JSON-LD in faq frontmatter (YAML can't use JS imports)
+  const faqPath = path.resolve(rootDir, "docs", "src", "content", "docs", "faq.mdx")
+  if (fs.existsSync(faqPath)) {
+    const faqContent = fs.readFileSync(faqPath, "utf-8")
+    fs.writeFileSync(faqPath, faqContent.replace(
+      /covers \d+ types and \d+\+? methods/g,
+      `covers ${typeCount} types and ${methodCount} methods`
+    ))
+  }
 
   updateReadmeBadge(/BotApi-[\d.]+/, `BotApi-${apiVersion}`)
 })
