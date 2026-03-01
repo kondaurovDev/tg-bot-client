@@ -49,6 +49,16 @@ const getTypeFromEntity = (
     Either.andThen(ExtractedType.makeFrom)
   )
 
+const getLatestVersion = (node: HtmlElement) =>
+  Either.fromNullable(
+    node
+      .querySelectorAll("p > strong")
+      .find((el) => /^Bot API \d/.test(el.text))
+      ?.text?.split(" ")
+      .at(-1),
+    () => new Error("Html node with latest API version not found")
+  )
+
 // ── DocPageError ──
 
 type DocPageErrorCode = "EntityNoFound"
@@ -95,10 +105,7 @@ export class DocPage
   }
 
   getLatestVersion() {
-    return Either.fromNullable(
-      this.node.querySelector("p > strong")?.text?.split(" ").at(-1),
-      () => new Error("Html node with latest API version not found")
-    )
+    return getLatestVersion(this.node)
   }
 }
 
@@ -129,5 +136,9 @@ export class WebAppPage
 
   getWebApp() {
     return this.getEntity("initializing mini apps")
+  }
+
+  getLatestVersion() {
+    return getLatestVersion(this.node)
   }
 }

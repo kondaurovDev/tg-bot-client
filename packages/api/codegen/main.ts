@@ -4,6 +4,8 @@
  * Entry point. Reads MODULE_NAME from env (`bot_api` or `webapp`) and runs
  * the corresponding code generation pipeline.
  */
+import * as fs from "node:fs"
+import * as path from "node:path"
 import { Config, Effect, Logger, LogLevel } from "effect"
 
 import { extractBotApiEntities, ExtractedWebApp } from "./scrape/entities"
@@ -36,11 +38,26 @@ const generateBotApi = Effect.fn("generate bot api")(function* () {
   })
 
   yield* tsMorph.saveFiles
+
+  const pkgDir = path.resolve(import.meta.dirname, "..")
+  fs.writeFileSync(
+    path.resolve(pkgDir, "bot-api-version.json"),
+    JSON.stringify({ version: apiVersion }, null, 2) + "\n"
+  )
+
+  const readmePath = path.resolve(pkgDir, "readme.md")
+  const readme = fs.readFileSync(readmePath, "utf-8")
+  fs.writeFileSync(
+    readmePath,
+    readme.replace(/BotApi-[\d.]+/, `BotApi-${apiVersion}`)
+  )
 })
 
 const generateWebApp = Effect.fn("generate web app")(function* () {
   const pageProvider = yield* PageProviderService
   const webappPage = yield* pageProvider.webapp
+
+  const webAppVersion = yield* webappPage.getLatestVersion()
 
   const tsMorph = yield* TsMorpthWriter
   const { writeWebApp } = yield* WebAppCodeWriterService
@@ -50,6 +67,14 @@ const generateWebApp = Effect.fn("generate web app")(function* () {
   writeWebApp(extractedWebApp)
 
   yield* tsMorph.saveFiles
+
+  const pkgDir = path.resolve(import.meta.dirname, "..")
+  const readmePath = path.resolve(pkgDir, "readme.md")
+  const readme = fs.readFileSync(readmePath, "utf-8")
+  fs.writeFileSync(
+    readmePath,
+    readme.replace(/Telegram\.WebApp-[\w.]+/, `Telegram.WebApp-${webAppVersion}`)
+  )
 })
 
 const gen = Effect.fn("Generate")(function* () {
